@@ -25,4 +25,15 @@ app.get('/', (req, res) => {
   res.send('API is running...');
 });
 
+app.get('/api/health', async (req, res) => {
+  const mongoose = require('mongoose');
+  const status = mongoose.connection.readyState;
+  const states = { 0: 'disconnected', 1: 'connected', 2: 'connecting', 3: 'disconnecting' };
+  res.json({ 
+    status: 'ok', 
+    dbState: states[status] || 'unknown',
+    timestamp: new Date() 
+  });
+});
+
 module.exports = app;
