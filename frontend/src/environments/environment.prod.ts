@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: '/api' // You might want to change this to your actual production API URL
+  apiUrl: 'https://mariage-backend-y8bn.onrender.com/api'
 };
