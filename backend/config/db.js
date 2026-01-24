@@ -2,8 +2,14 @@ const mongoose = require('mongoose');
 
 const connectDB = async () => {
   try {
+    // Listeners for connection events
+    mongoose.connection.on('connected', () => console.log('Mongoose connected to DB Cluster'));
+    mongoose.connection.on('error', (err) => console.error('Mongoose connection error:', err));
+    mongoose.connection.on('disconnected', () => console.log('Mongoose disconnected'));
+
     const conn = await mongoose.connect(process.env.MONGODB_URI, {
-      serverSelectionTimeoutMS: 5000 // Timeout after 5s instead of 30s
+      serverSelectionTimeoutMS: 5000,
+      family: 4 // Force IPv4
     });
     console.log(`MongoDB Connected: ${conn.connection.host}`);
     return conn;

@@ -4,7 +4,10 @@ const jwt = require('jsonwebtoken');
 
 exports.register = async (req, res) => {
   try {
+    const mongoose = require('mongoose');
     console.log('Register request body:', req.body);
+    console.log('DB Connection State:', mongoose.connection.readyState); // 0: disconnected, 1: connected, 2: connecting, 3: disconnecting
+
     const { email, password, name } = req.body;
 
     if (!email || !password) {
