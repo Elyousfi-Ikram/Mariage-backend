@@ -20,7 +20,9 @@ exports.uploadPhotos = (req, res) => {
   if (!req.files || req.files.length === 0) {
     return res.status(400).json({ message: 'No files uploaded' });
   }
-  res.status(201).json({ message: 'Files uploaded successfully' });
+  const baseUrl = `${req.protocol}://${req.get('host')}/images`;
+  const uploaded = req.files.map((f) => `${baseUrl}/${f.filename}`);
+  res.status(201).json({ message: 'Files uploaded successfully', uploaded });
 };
 
 exports.deletePhoto = (req, res) => {
