@@ -8,8 +8,9 @@ const connectDB = async () => {
     mongoose.connection.on('disconnected', () => console.log('Mongoose disconnected'));
 
     const conn = await mongoose.connect(process.env.MONGODB_URI, {
+      dbName: 'mariage',
       serverSelectionTimeoutMS: 5000,
-      family: 4 // Force IPv4
+      family: 4
     });
     console.log(`MongoDB Connected: ${conn.connection.host}`);
     return conn;
