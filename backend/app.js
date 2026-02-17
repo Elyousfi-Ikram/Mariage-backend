@@ -19,7 +19,8 @@ app.use('/images', express.static(path.join(__dirname, 'uploads')));
 // Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/albums', require('./routes/albums'));
-app.use('/api', require('./routes/gallery')); // Gallery routes are at /api root in service?
+app.use('/api', require('./routes/gallery'));
+app.use('/api/sync', require('./routes/sync'));
 
 app.get('/', (req, res) => {
   res.send('API is running...');

@@ -5,6 +5,9 @@ const AlbumSchema = new mongoose.Schema({
   title: { type: String, required: true },
   shareId: { type: String, unique: true },
   createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
+  version: { type: Number, default: 1 },
 });
 
 module.exports = mongoose.model('Album', AlbumSchema);
+ 

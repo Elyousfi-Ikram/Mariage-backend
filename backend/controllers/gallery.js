@@ -1,36 +1,61 @@
 const fs = require('fs');
 const path = require('path');
 const archiver = require('archiver');
+const Photo = require('../models/Photo');
 
 const IMAGES_DIR = path.join(__dirname, '../uploads');
 
-exports.getPhotos = (req, res) => {
-  fs.readdir(IMAGES_DIR, (err, files) => {
-    if (err) {
-      if (err.code === 'ENOENT') return res.status(200).json([]);
-      return res.status(500).json({ message: 'Error reading images directory' });
+exports.getPhotos = async (req, res) => {
+  try {
+    const filter = { userId: req.user.userId };
+    if (req.query.albumId) {
+      filter.albumId = req.query.albumId;
     }
-    const baseUrl = `${req.protocol}://${req.get('host')}/images`;
-    const urls = files.map((f) => `${baseUrl}/${f}`);
+    const photos = await Photo.find(filter).sort({ createdAt: -1 });
+    const urls = photos.map((p) => p.url);
     res.status(200).json(urls);
-  });
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching photos', error: error.message });
+  }
 };
 
-exports.uploadPhotos = (req, res) => {
+exports.uploadPhotos = async (req, res) => {
   if (!req.files || req.files.length === 0) {
     return res.status(400).json({ message: 'No files uploaded' });
   }
   const baseUrl = `${req.protocol}://${req.get('host')}/images`;
-  const uploaded = req.files.map((f) => `${baseUrl}/${f.filename}`);
-  res.status(201).json({ message: 'Files uploaded successfully', uploaded });
+  const { albumId } = req.body;
+  try {
+    const docs = await Photo.insertMany(
+      req.files.map((file) => ({
+        userId: req.user.userId,
+        albumId: albumId || null,
+        path: file.filename,
+        url: `${baseUrl}/${file.filename}`,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        version: 1,
+      }))
+    );
+    const uploaded = docs.map((d) => d.url);
+    res.status(201).json({ message: 'Files uploaded successfully', uploaded });
+  } catch (error) {
+    res.status(500).json({ message: 'Error saving photos', error: error.message });
+  }
 };
 
-exports.deletePhoto = (req, res) => {
+exports.deletePhoto = async (req, res) => {
   const filename = req.params.filename;
   const filepath = path.join(IMAGES_DIR, filename);
 
+  try {
+    await Photo.findOneAndDelete({ userId: req.user.userId, path: filename });
+  } catch (error) {
+    return res.status(500).json({ message: 'Error deleting photo metadata', error: error.message });
+  }
+
   fs.unlink(filepath, (err) => {
-    if (err) {
+    if (err && err.code !== 'ENOENT') {
       return res.status(500).json({ message: 'Error deleting file' });
     }
     res.status(200).json({ message: 'File deleted' });
